@@ -1,17 +1,48 @@
 ;(function($){
-    var pluginName = "md-page";
+    // Variables
+    var pluginName = "modulo";
+    var pageLoading = false;
+    var isInitialized = false;
+    var currentUrl = "";
+    var currentDatas;
+    var currentCallback;
+    var currentNeedPageRefresh;
+    var currentPageRefreshIntervalDelay;
+    var pageRefreshInterval;
 
+    // Publics methods definition
     var publicMethods = {
-        alert : function() {
-            displayText("Alert : " + getData(this).text);
+        get : function(data) {
+            return getValue.call(this, data);
         },
-        content : function(test) {
-            displayText("Content : " + test);
+        set : function(options) {
+            return update.call(this, options);
+        },
+        page : function(pageName) {
+            var pageConfig = getPage.call(this, pageName);
+
+            if(nullOrUndefined(pageConfig)) {
+                $.error("No one configuration found for this page : "+pageName+".");
+            }
+
+            console.log(pageConfig);
         }
     };
 
-    var displayText = function(text) {
-        $("body").append(text + "<br>");
+    // Private methods
+    var nullOrUndefined = function(toTest) {
+        if (typeof toTest === "undefined" || toTest === null) {
+            return true;
+        }
+
+        if (toTest.jquery === "undefined") {
+            return false;
+        }
+
+        if (toTest.length == 0) {
+            return true;
+        }
+        return false;
     }
 
     var initialize = function(options){
@@ -24,34 +55,48 @@
         return $(this).data(pluginName, options);
     };
 
+    var getValue = function(dataName){
+        var existingOptions = getData(this);
+        return existingOptions[dataName];
+    };
+
+    var getPage = function(page){
+        var pages = getValue.call(this, "pages");
+        return pages.find(x => x.name === page);
+    };
+
     var getData = function(item){
         return $(item).data(pluginName);
     }
 
-    // Initializer
+    var getElem = function(selector) {
+        return $(selector);
+    }
+
+    // Initializer and methods caller
     $.fn.extend({
-        page: function(options,arg) {
+        modulo: function(options,arg) {
             var objects = []; 
             this.each(function() {
-                objects.push(new $.page(this, options, arg));
+                objects.push($.modulo(this, options, arg));
             });
             return objects;
         }
     });
 
-    // Constructor and methods caller
-    $.page = function(item, options, arguments) {
+    // Constructor
+    $.modulo = function(item, options, arguments) {
         if (options && typeof(options) == 'string') {
             if (publicMethods[options]) {
                return publicMethods[options].call(item, arguments);
             }
 
-            $.error('Method ' +  options + ' does not exist on jQuery.page');
+            $.error('Method ' +  options + ' does not exist on jQuery.modulo');
             return;
         }
 
         if (typeof options === 'object' || !options) {
-            options = $.extend({}, $.page.defaults, options);
+            options = $.extend({}, $.modulo.defaults, options);
         } 
 
         var $object = getData(item);
@@ -65,7 +110,25 @@
         return $object;
     };
 
-    $.page.defaults = {
-        "name" : pluginName
+    // Properties
+    $.modulo.defaults = {
+        // Global
+        "name" : pluginName,
+        "pages" : [],
+
+        // Elements
+        "bodyContent"      : "#body-content",
+        "pageWrapper"      : "#page-wrapper",
+        "pageTitle"        : "#page-title",
+        "pageIcon"         : "#page-icon",
+        "pageContent"      : "#page-content",
+
+        // Classes
+        "pageReadyClass"   : "page-ready",
+        "pageLoadingClass" : "page-loading",
+
+        // Timer
+        "timeBetweenPage" : 500,                  // ms
+        "pageAutoRefreshInterval" : 1 * 60 * 1000 // minutes X seconds X 1000 to convert in milliseconds
     };
 })(jQuery);

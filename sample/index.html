@@ -4,28 +4,20 @@
 	<title>Sampel</title>
 </head>
 <body>
-	<p>Text 1</p>
-	<p>Text 2</p>
+	<div class="nav"></div>
 
 	<script src="../lib/jquery/dist/jquery.js"></script>
 	<script src="../src/test.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function(){
-			$.each($("p"), function(i,v){
-				var test = $(this).page({
-					text: $(this).text()
-				});
+			var $modulo = $("body").modulo({
+				pages : [{
+					"name" : "dashboard",
+					"url" : "/Dashboard.php"
+				}]
 			});
 
-			$("p").page("alert");
-			$("p").page("content", "lol");
-
-			$.each($("p"), function(i,v){
-				var test = $(this).page({
-					text: $(this).text() + "2"
-				});
-			});
-			$("p").page("alert");
+			$("body").modulo("page", "dashboard");
 		});
 	</script>
 </body>
